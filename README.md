@@ -146,17 +146,15 @@ let replaceProxyGroupName = function(map, meRulesConfig) {
 let choose = function(config, profileName) {
   let mapName = profileName+"-map";
   let map = config[mapName.toLowerCase()]
-    console.info(map)
   let myRulesConfig = config["my-rules"];
-  switch (profileName) {
-    case "iKuuu" : myRulesConfig = replaceProxyGroupName(map, myRulesConfig);break;
-  }
+  myRulesConfig = replaceProxyGroupName(map, myRulesConfig)
 
   //前置新的规则
   let oldRules = config.rules;
   config.rules = myRulesConfig.concat(oldRules);
 
   console.info(profileName);
+  console.info(map)
   console.info("my-rules:" + myRulesConfig);
 };
 
