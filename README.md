@@ -144,18 +144,25 @@ let replaceProxyGroupName = function(map, meRulesConfig) {
 
 //匹配当前订阅的代理集名称
 let choose = function(config, profileName) {
-  let mapName = profileName+"-map";
+  let mapName = ""
+  if (profileName == "iKuuu_V2.yaml") {
+      mapName = "iKuuu-map";
+  } else {
+    mapName = profileName+"-map";
+  }
   let map = config[mapName.toLowerCase()]
   let myRulesConfig = config["my-rules"];
-  myRulesConfig = replaceProxyGroupName(map, myRulesConfig)
+  //myRulesConfig = replaceProxyGroupName(map, myRulesConfig)
 
   //前置新的规则
-  let oldRules = config.rules;
-  config.rules = myRulesConfig.concat(oldRules);
+  //let oldRules = config.rules;
+  //config.rules = myRulesConfig.concat(oldRules);
 
-  console.info(profileName);
-  console.info(map)
-  console.info("my-rules:" + myRulesConfig);
+  //console.info(profileName);
+  //console.info(mapName);
+  //console.info(map)
+  //console.info(oldRules);
+  //console.info("my-rules:" + myRulesConfig);
 };
 
 function main(config, profileName) {
