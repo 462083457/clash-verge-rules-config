@@ -1,11 +1,6 @@
 # 全局配置扩展
 
 ```yaml
-ikuuu-map:
-  proxy: 🔰 选择节点
-  chinese:  🇨🇳 国内网站
-  reject: 🛑 拦截广告
-
 my-rules:
  - RULE-SET,google,proxy                        #google
  - RULE-SET,proxy,proxy                         #代理域名列表
@@ -23,7 +18,64 @@ my-rules:
  - DOMAIN,yacd.haishan.me,chinese               #
  - RULE-SET,reject,reject                       #广告域名列表
 
-append-rules:
+#自制代理组 🇯🇵 日本  🇯🇵 日本下载专用  🇷🇺 俄罗斯
+ikuuu-map:
+  proxy: 🔰 选择节点
+  chinese:  🇨🇳 国内网站
+  reject: 🛑 拦截广告
+  download: 🇯🇵 日本下载专用
+  Jp: 🇯🇵 日本
+  Ru: 🇷🇺 俄罗斯
+
+yi-yuan-map:
+  proxy: 一元机场
+  chinese: 一元机场
+  reject: 一元机场
+  download: 🇯🇵 日本
+  Jp: 🇯🇵 日本
+  Ru: 🇯🇵 日本
+
+# 前置代理组
+iKuuu-group: 
+ - type: 'select'
+   name: '🇷🇺 俄罗斯'
+   proxies:
+     - '🇷🇺 俄罗斯Y01'
+ - type: 'select'
+   name: ' 🇯🇵 日本'
+   proxies:
+     - '🇯🇵 日本Y01'
+     - '🇯🇵 日本Y02 | IEPL'
+     - '🇯🇵 日本Y03 | IEPL'
+     - '🇯🇵 日本Y04 | IEPL'
+     - '🇯🇵 日本Y05 | 下载专用 | x0.01'
+     - '🇯🇵 日本Y06 | 下载专用 | x0.01'
+     - '🇯🇵 日本Y07 | x0.8'
+     - '🇯🇵 日本Y08 | x0.8'
+     - '🇯🇵 日本Y09 | IEPL'
+     - '🇯🇵 日本Y10 | IEPL'
+     - '🇯🇵 日本Y11 | IEPL'
+     - '🇯🇵 免费-日本1-Ver.7'
+     - '🇯🇵 免费-日本2-Ver.8'
+     - '🇯🇵 免费-日本3-Ver.7'
+     - '🇯🇵 免费-日本4-Ver.8'
+     - '🇯🇵 免费-日本5-Ver.9'
+     - '🇯🇵 免费-日本6-Ver.8'
+     - '🇯🇵 免费-日本7-Ver.2'
+ - type: 'select'
+   name: ' 🇯🇵 日本下载专用'
+   proxies:
+     - '🇯🇵 日本Y05 | 下载专用 | x0.01'
+     - '🇯🇵 日本Y06 | 下载专用 | x0.01'
+
+yi-yuan-group:
+  - type: 'select'
+    name: ' 🇯🇵 日本'
+    proxies:
+      - '🇯🇵日本 01 | 专线'
+      - '🇯🇵日本 02 | 专线'
+      - '🇯🇵日本 03 | 专线'
+      - '🇯🇵日本 04 | 专线'
 
 rule-providers:
   reject:
@@ -128,46 +180,73 @@ dns:
 # 全局扩展脚本
 
 ```javascript
-//替换的代理集名称
-let replaceProxyGroupName = function(map, meRulesConfig) {
-  return meRulesConfig.map((item) => {
-    let newArray = item.split(',');
-    let proxyGroupName = "DIRECT"
-    if (map !== null){
-      proxyGroupName = map[newArray[2]]==null?"DIRECT":map[newArray[2]]
-    }
-    newArray[2] = proxyGroupName
-    let newItem = newArray.join(',');
-    return newItem;
-  });
+//匹配自定义的代理 规则名称 配置
+var matchProxyMapName = function(profileName) {
+	var proxyMapName;
+	switch(profileName) {
+	case "iKuuu_V2.yaml": proxyMapName = "iKuuu-map";          break;
+	default:              proxyMapName = profileName + "-map";
+	}
+	return proxyMapName;
 };
 
 //匹配当前订阅的代理集名称
-let choose = function(config, profileName) {
-  let mapName = ""
-  if (profileName == "iKuuu_V2.yaml") {
-      mapName = "iKuuu-map";
-  } else {
-    mapName = profileName+"-map";
-  }
-  let map = config[mapName.toLowerCase()]
-  let myRulesConfig = config["my-rules"];
-  //myRulesConfig = replaceProxyGroupName(map, myRulesConfig)
-
-  //前置新的规则
-  //let oldRules = config.rules;
-  //config.rules = myRulesConfig.concat(oldRules);
-
-  //console.info(profileName);
-  //console.info(mapName);
-  //console.info(map)
-  //console.info(oldRules);
-  //console.info("my-rules:" + myRulesConfig);
+var replaceProxyRulesName = function(config, profileName) {
+	var proxyMapName = matchProxyMapName(profileName)
+	var proxyMapConfig = config[proxyMapName.toLowerCase()]
+	
+	var rulesConfig = config["my-rules"];
+	var newRules = rulesConfig.map((item) => {
+		var newArray = item.split(',');
+		var proxyRulesName = "DIRECT";
+		var mapName = newArray[2];
+		if (proxyMapConfig != null){
+			proxyRulesName = proxyMapConfig[mapName]==null?"DIRECT":proxyMapConfig[mapName]
+		}
+		newArray[2] = proxyRulesName
+		var newItem = newArray.join(',');
+		return newItem;
+	});
+	
+	let oldRules = config.rules;
+	config.rules = newRules.concat(oldRules);
+	
+	//console.info(profileName);
 };
 
+//匹配自定义的代理 规则集 配置
+var matchProxyGroupName = function(profileName) {
+	var proxyGroupName;
+	switch(profileName) {
+	case "iKuuu_V2.yaml": proxyGroupName = "iKuuu-group";          break;
+	default:              proxyGroupName = profileName + "-group";
+	}
+	return proxyGroupName;
+};
+
+//添加代理集
+var addProxyGroup = function(config, profileName) {
+	var proxyGroupName = matchProxyGroupName(profileName);
+	var newProxyGroup = config[proxyGroupName.toLowerCase()];
+
+	var oldProxyGroup = config["proxy-groups"];
+	if (newProxyGroup != null) {
+		config["proxy-groups"] = newProxyGroup.concat(oldProxyGroup);
+	}
+};
+
+var ccccccccccccc = function(config, profileName) {
+	var proxyGroupName = matchProxyGroupName(profileName);
+	var newProxyGroup = config[proxyGroupName.toLowerCase()];
+	console.info(proxyGroupName);
+	console.info(newProxyGroup==null?"NO":"YES");
+}
+
 function main(config, profileName) {
-  choose(config, profileName);
-  return config;
+	ccccccccccccc(config, profileName);
+	//addProxyGroup(config, profileName);
+	//replaceProxyRulesName(config, profileName);
+	return config;
 }
 ```
 
